@@ -1,20 +1,16 @@
 import PyTango
 import playsound
 from notify_run import Notify
-
-import socket
-import select
-import traceback
-import json
+import time
 
 from PyQt4 import QtGui, QtCore
 from mainwindow_ui import Ui_LM4_Monitor
 
-# from Queue import Queue
-# from Queue import Empty as emptyQueue
 
 # ----------------------------------------------------------------------
 class MainWindow(QtGui.QMainWindow):
+
+    SoundRepeatTime = 1
 
     # ----------------------------------------------------------------------
     def __init__(self, options):
@@ -35,22 +31,20 @@ class MainWindow(QtGui.QMainWindow):
         self.lostNotificationSent = False
 
         self.playSound = True
+        self.lastSoundTime = time.time()
         self.status = False
 
         self.statusBarLabel = QtGui.QLabel("Sound: {}".format(str(self.playSound)))
         self.statusBar().addPermanentWidget(self.statusBarLabel)
 
         self._serverPort = options.port
-        self.LM4_proxy = PyTango.DeviceProxy('hasylab/p22_lm4/output')
-        self.V2_proxy = PyTango.DeviceProxy('hasylab/petra3_p22vil.cdi/v2')
-        self.PS2_proxy = PyTango.DeviceProxy('hasylab/petra3_p22vil.cdi/ps2')
+        self.LM4_proxy   = PyTango.DeviceProxy('hasylab/p22_lm4/output')
+        self.V2_proxy    = PyTango.DeviceProxy('hasylab/petra3_p22vil.cdi/v2')
+        self.PS2_proxy   = PyTango.DeviceProxy('hasylab/petra3_p22vil.cdi/ps2')
         self.PETRA_proxy = PyTango.DeviceProxy('petra/globals/keywords')
+        self.DCM_proxy   = PyTango.DeviceProxy('p22/dcmener/oh.01')
 
         self.sound = options.sound
-
-        # self.stopServerBucket = Queue()
-        # self._thread_running = False
-        # self._startServer()
 
         self._refreshTimer = QtCore.QTimer(self)
         self._refreshTimer.timeout.connect(self._refreshStatus)
@@ -58,29 +52,48 @@ class MainWindow(QtGui.QMainWindow):
 
         self.exitOnClose = False
 
-        self.CMD_MAP = {"Disconnect": self._disconnect,
-                        "Status": self._getStatus,
-                       }
     # ----------------------------------------------------------------------
     def setupMenu(self):
 
         self._soundAction = QtGui.QAction("Turn off sound", self,
                                                triggered=self._trunOnSound)
-
-        self._serverAction = QtGui.QAction("Stop server", self,
-                                               triggered=self._startServer)
+        self._soundAction.setCheckable(True)
 
         self._closeAction = QtGui.QAction("Exit", self,
-                                               triggered=self._quitMe)
+                                          triggered=self._quitMe)
 
-        self._testMessage = QtGui.QAction("Test Notify", self,
-                                               triggered=self._sendTest)
+        self._menuComponents = QtGui.QMenu("Values to be monitored", self)
+
+        self._monitorLM4 = QtGui.QAction("Monitor LM4", self)
+        self._monitorLM4.setCheckable(True)
+        self._monitorLM4.setChecked(True)
+
+        self._monitorV2 = QtGui.QAction("Monitor V2", self)
+        self._monitorV2.setCheckable(True)
+        self._monitorV2.setChecked(True)
+
+        self._monitorPS2 = QtGui.QAction("Monitor PS2", self)
+        self._monitorPS2.setCheckable(True)
+        self._monitorPS2.setChecked(True)
+
+        self._monitorPETRAcurrent = QtGui.QAction("Monitor PETRA current", self)
+        self._monitorPETRAcurrent.setCheckable(True)
+        self._monitorPETRAcurrent.setChecked(True)
+
+        self._monitorPETRAbunches = QtGui.QAction("Monitor PETRA bunches", self)
+        self._monitorPETRAbunches.setCheckable(True)
+        self._monitorPETRAbunches.setChecked(True)
+
+        self._menuComponents.addAction(self._monitorLM4)
+        self._menuComponents.addAction(self._monitorV2)
+        self._menuComponents.addAction(self._monitorPS2)
+        self._menuComponents.addAction(self._monitorPETRAcurrent)
+        self._menuComponents.addAction(self._monitorPETRAbunches)
 
         menubar = self.menuBar()
         menubar.addAction(self._soundAction)
         self._soundAction.setEnabled(False)
-        # menubar.addAction(self._serverAction)
-        # menubar.addAction(self._testMessage)
+        menubar.addAction(self._menuComponents.menuAction())
         menubar.addAction(self._closeAction)
 
     # ----------------------------------------------------------------------
@@ -102,21 +115,33 @@ class MainWindow(QtGui.QMainWindow):
             v2State = False
 
         try:
-            PCurrent = self.PETRA_proxy.BeamCurrent
-            gotPETRA = True
+            PBunches = self.PETRA_proxy.NumberOfBunches
+            gotPbunches = True
         except:
-            gotPETRA = False
+            gotPbunches = False
+
+        try:
+            PCurrent = self.PETRA_proxy.BeamCurrent
+            gotPcurrent = True
+        except:
+            gotPcurrent = False
 
         try:
             ps2State = self.PS2_proxy.stellung[0]
         except:
             ps2State = False
 
+        try:
+            energyText = "{:.2f} eV".format(self.DCM_proxy.position)
+        except:
+            energyText = 'OK'
+
         beamOk = True
 
         if v2State:
             if int(v2State) != 2:
-                beamOk = False
+                if self._monitorV2.isChecked():
+                    beamOk = False
                 self._ui.lbV2.setText("closed")
                 self._ui.lbV2.setStyleSheet('color: red')
             else:
@@ -127,8 +152,9 @@ class MainWindow(QtGui.QMainWindow):
             self._ui.lbV2.setStyleSheet('color: orange')
 
         if maxLm4:
-            if maxLm4 < 15:
-                beamOk = False
+            if maxLm4 < 50:
+                if self._monitorLM4.isChecked():
+                    beamOk = False
                 self._ui.lbLM4.setText("no beam")
                 self._ui.lbLM4.setStyleSheet('color: red')
             else:
@@ -138,22 +164,37 @@ class MainWindow(QtGui.QMainWindow):
             self._ui.lbLM4.setText("NC")
             self._ui.lbLM4.setStyleSheet('color: orange')
 
-        if gotPETRA:
-            self._ui.lbPetra.setText('{}'.format(int(PCurrent)))
-            if int(PCurrent) < 80:
-                beamOk = False
-                self._ui.lbPetra.setStyleSheet('color: red')
-            elif int(PCurrent) < 98:
-                self._ui.lbPetra.setStyleSheet('color: orange')
+        if gotPbunches:
+            self._ui.lbPbunches.setText('{}'.format(int(PBunches)))
+            if int(PBunches) in [40, 80, 480]:
+                self._ui.lbPbunches.setStyleSheet('color: green')
             else:
-                self._ui.lbPetra.setStyleSheet('color: green')
+                if self._monitorPETRAbunches.isChecked():
+                    beamOk = False
+                self._ui.lbPbunches.setStyleSheet('color: red')
         else:
-            self._ui.lbPetra.setText('NC')
-            self._ui.lbPetra.setStyleSheet('color: orange')
+            self._ui.lbPbunches.setText('NC')
+            self._ui.lbPbunches.setStyleSheet('color: orange')
+
+
+        if gotPcurrent:
+            self._ui.lbPcurrent.setText('{}'.format(int(PCurrent)))
+            if int(PCurrent) < 60:
+                if self._monitorPETRAcurrent.isChecked():
+                    beamOk = False
+                self._ui.lbPcurrent.setStyleSheet('color: red')
+            elif int(PCurrent) < 65:
+                self._ui.lbPcurrent.setStyleSheet('color: orange')
+            else:
+                self._ui.lbPcurrent.setStyleSheet('color: green')
+        else:
+            self._ui.lbPcurrent.setText('NC')
+            self._ui.lbPcurrent.setStyleSheet('color: orange')
 
         if ps2State:
             if int(ps2State) != 2:
-                beamOk = False
+                if self._monitorPS2.isChecked():
+                    beamOk = False
                 self._ui.lbPS2.setText("closed")
                 self._ui.lbPS2.setStyleSheet('color: red')
             else:
@@ -169,9 +210,11 @@ class MainWindow(QtGui.QMainWindow):
             self._ui.lbStatus.setStyleSheet('color: red')
 
             if self.playSound:
-                self._soundAction.setText('Turn off sound')
-                self._soundAction.setEnabled(True)
-                playsound.playsound('./{}.mp3'.format(self.sound), True)
+                if time.time() > self.lastSoundTime + self.SoundRepeatTime:
+                    self.lastSoundTime = time.time()
+                    self._soundAction.setText('Turn off sound')
+                    self._soundAction.setEnabled(True)
+                    playsound.playsound('./{}.mp3'.format(self.sound), True)
 
             if not self.lostNotificationSent:
                 self.notifyChannel.send('Beam lost')
@@ -181,7 +224,7 @@ class MainWindow(QtGui.QMainWindow):
             self.playSound = True
             self._soundAction.setEnabled(False)
             self.status = True
-            self._ui.lbStatus.setText("OK")
+            self._ui.lbStatus.setText(energyText)
             self._ui.lbStatus.setStyleSheet('color: green')
 
             if not self.backNotificationSent:
@@ -222,94 +265,3 @@ class MainWindow(QtGui.QMainWindow):
     def _quitMe(self):
         self.exitOnClose = True
         self.close()
-
-    # ----------------------------------------------------------------------
-    # ----------------------------------------------------------------------
-    # ----------------------------------------------------------------------
-    def run(self):
-        """
-        """
-        print ("VISA Gate server on port {}".format(self._serverPort))
-
-        self._socket.listen(1)
-        self._thread_running = True
-
-        read_list = [self._socket]
-        while True:
-            readable, writable, errored = select.select(read_list, [], [], 0.1)
-            for s in readable:
-                if s is self._socket:
-                    self._connection, client_address = self._socket.accept()
-                    self._connection.setblocking(0)
-                    print('Test')
-                    while True:
-                        try:
-                            self._process_request()
-                        except socket.error as err:
-                            if err.args[0] == 10035:
-                                try:
-                                    _ = self.stopBucket.get(block=False)
-                                except emptyQueue:
-                                    pass
-                                else:
-                                    self.stopBucket.put('1')
-                                    break
-                            else:
-                                break
-                        except Exception as _:
-                            self.newPrint(traceback.format_exc())
-                            self.stopBucket.put('1')
-                            break
-            try:
-                _ = self.stopBucket.get(block=False)
-            except emptyQueue:
-                pass
-            else:
-                break
-
-    # ----------------------------------------------------------------------
-    def _process_request(self):
-        """
-        """
-        try:
-            request = str(
-                self._connection.recv(self.MAX_REQUEST_LEN)).strip()  # NOTE: won't work in Python 3
-            status, reply = self._command_dispatcher(request)
-
-            self.newPrint("Request: '{}', status: '{}', reply: '{}'".format(request, status, reply))
-            self._connection.sendall(json.dumps([status, reply]))
-
-        except KillConnection as _:
-            self.newPrint(traceback.format_exc())
-            self._connection.close()
-            self.newPrint("Connection closed")
-            raise
-
-    # ----------------------------------------------------------------------
-    def _command_dispatcher(self, request):
-
-        split = request.split('#')
-        command = split[0]
-        params = ""
-
-        if len(split) > 1:
-            params = split[1:]
-        try:
-            return self.CMD_MAP[command](params)
-        except KeyError as err:
-            return False, 'KeyError'
-
-    # ----------------------------------------------------------------------
-    def _getStatus(self):
-
-        self._refreshStatus()
-        return self.status
-
-    # ----------------------------------------------------------------------
-    def _disconnect(self, params):
-
-        raise KillConnection()             # should close connection
-
-# ----------------------------------------------------------------------
-class KillConnection(Exception):
-    pass
