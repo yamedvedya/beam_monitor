@@ -202,7 +202,7 @@ class Ui_LM4_Monitor(object):
         QtCore.QMetaObject.connectSlotsByName(LM4_Monitor)
 
     def retranslateUi(self, LM4_Monitor):
-        LM4_Monitor.setWindowTitle(_translate("LM4_Monitor", "MainWindow", None))
+        LM4_Monitor.setWindowTitle(_translate("LM4_Monitor", "MainRoutine", None))
         self.label.setText(_translate("LM4_Monitor", "Beam:", None))
         self.lbStatus.setText(_translate("LM4_Monitor", "OFF!!!", None))
         self.lbPetraC_3.setText(_translate("LM4_Monitor", "PETRA:", None))

@@ -1,7 +1,7 @@
 import sys
 
 from PyQt4 import QtGui
-from mainWindow import MainWindow
+from main_routine import MainRoutine
 from optparse import OptionParser
 
 
@@ -16,15 +16,17 @@ def move2RightBottomCorner(win):
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
     parser = OptionParser()
-    parser.add_option("-p", "--port", dest="port",
-                      help="Port number", default="16985")
+    parser.add_option("-w", "--windowless", dest="windowless",
+                      help="True or False", default='False')
+    parser.add_option("-n", "--notify", dest="notify",
+                      help="True or False", default='False')
     parser.add_option("-s", "--sound", dest="sound",
-                      help="Sound file", default='''Fire''')
+                      help="Sound file", default='Fire')
     (options, _) = parser.parse_args()
 
     app = QtGui.QApplication(sys.argv)          # don't pass any args here!
 
-    mainWindow = MainWindow(options)
+    mainWindow = MainRoutine(options)
     mainWindow.move(mainWindow.width() * -3, 0)
     mainWindow.show()
 
