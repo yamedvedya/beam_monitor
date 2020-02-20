@@ -1,16 +1,18 @@
-import PyTango
+import inspect
 import playsound
-from notify_run import Notify
+from distutils.util import strtobool
 import time
+import conditions as conditions_list
 
 from PyQt4 import QtGui, QtCore
-from mainwindow_ui import Ui_LM4_Monitor
-
+from mainwindow_ui import Ui_Beam_Monitor
+from condition import Condition
 
 # ----------------------------------------------------------------------
 class MainRoutine(QtGui.QMainWindow):
 
     SoundRepeatTime = 1
+    WIDGETS_PER_ROW = 3
 
     # ----------------------------------------------------------------------
     def __init__(self, options):
@@ -19,41 +21,69 @@ class MainRoutine(QtGui.QMainWindow):
         super(MainRoutine, self).__init__()
 
         # GUI
-        self._ui = Ui_LM4_Monitor()
+        self._ui = Ui_Beam_Monitor()
         self._ui.setupUi(self)
 
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
-        self.setupMenu()
+        self._get_conditions()
+        self._setupMenu()
+        self._setupGui()
 
-        self.notifyChannel = Notify('https://notify.run/api/', 'https://notify.run/WBYSjwtglRmFnrxC')
-        self.backNotificationSent = False
-        self.lostNotificationSent = False
+        self.beam_status = True
 
-        self.playSound = True
+        self.tray_icon = QtGui.QSystemTrayIcon(self)
+        self.tray_icon.setIcon(self.style().standardIcon(QtGui.QStyle.SP_ComputerIcon))
+        show_action = QtGui.QAction("Show", self)
+        quit_action = QtGui.QAction("Exit", self)
+        tray_menu = QtGui.QMenu()
+        tray_menu.addAction(show_action)
+        tray_menu.addAction(quit_action)
+        show_action.triggered.connect(self._showMe)
+        quit_action.triggered.connect(self._quitMe)
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
+        self.tray_icon.activated.connect(self._iconClicked)
+
+        if strtobool(options.notify):
+            from notify_run import Notify
+            self._notify = True
+            self.notifyChannel = Notify('https://notify.run/api/', 'https://notify.run/WBYSjwtglRmFnrxC')
+            self.backNotificationSent = False
+            self.lostNotificationSent = False
+        else:
+            self._notify = False
+
+        self._show_msg_box = strtobool(options.msgbox)
+        self._msg_box_showed = False
+
+        self.sound = options.sound
+        self.playSound = strtobool(options.alarm)
         self.lastSoundTime = time.time()
-        self.status = False
 
         self.statusBarLabel = QtGui.QLabel("Sound: {}".format(str(self.playSound)))
         self.statusBar().addPermanentWidget(self.statusBarLabel)
-
-        self._serverPort = options.port
-        self.LM4_proxy   = PyTango.DeviceProxy('hasylab/p22_lm4/output')
-        self.V2_proxy    = PyTango.DeviceProxy('hasylab/petra3_p22vil.cdi/v2')
-        self.PS2_proxy   = PyTango.DeviceProxy('hasylab/petra3_p22vil.cdi/ps2')
-        self.PETRA_proxy = PyTango.DeviceProxy('petra/globals/keywords')
-        self.DCM_proxy   = PyTango.DeviceProxy('p22/dcmener/oh.01')
-
-        self.sound = options.sound
-
         self._refreshTimer = QtCore.QTimer(self)
         self._refreshTimer.timeout.connect(self._refreshStatus)
         self._refreshTimer.start(500)
 
         self.exitOnClose = False
 
+        if strtobool(options.windowless):
+            self.hide()
+            self.tray_icon.show()
+
     # ----------------------------------------------------------------------
-    def setupMenu(self):
+    def _get_conditions(self):
+        self._conditions_names = [cls_name for cls_name, cls_obj in inspect.getmembers(conditions_list) if
+                                  inspect.isclass(cls_obj)]
+
+        self.conditions = {}
+        for name in self._conditions_names:
+            self.conditions[name] = getattr(conditions_list, name)()
+
+    # ----------------------------------------------------------------------
+    def _setupMenu(self):
 
         self._soundAction = QtGui.QAction("Turn off sound", self,
                                                triggered=self._trunOnSound)
@@ -63,38 +93,43 @@ class MainRoutine(QtGui.QMainWindow):
                                           triggered=self._quitMe)
 
         self._menuComponents = QtGui.QMenu("Values to be monitored", self)
+        self._menu_list = {}
 
-        self._monitorLM4 = QtGui.QAction("Monitor LM4", self)
-        self._monitorLM4.setCheckable(True)
-        self._monitorLM4.setChecked(True)
-
-        self._monitorV2 = QtGui.QAction("Monitor V2", self)
-        self._monitorV2.setCheckable(True)
-        self._monitorV2.setChecked(True)
-
-        self._monitorPS2 = QtGui.QAction("Monitor PS2", self)
-        self._monitorPS2.setCheckable(True)
-        self._monitorPS2.setChecked(True)
-
-        self._monitorPETRAcurrent = QtGui.QAction("Monitor PETRA current", self)
-        self._monitorPETRAcurrent.setCheckable(True)
-        self._monitorPETRAcurrent.setChecked(True)
-
-        self._monitorPETRAbunches = QtGui.QAction("Monitor PETRA bunches", self)
-        self._monitorPETRAbunches.setCheckable(True)
-        self._monitorPETRAbunches.setChecked(True)
-
-        self._menuComponents.addAction(self._monitorLM4)
-        self._menuComponents.addAction(self._monitorV2)
-        self._menuComponents.addAction(self._monitorPS2)
-        self._menuComponents.addAction(self._monitorPETRAcurrent)
-        self._menuComponents.addAction(self._monitorPETRAbunches)
+        for name in self._conditions_names:
+            self._menu_list[name] = QtGui.QAction("Monitor {}".format(name), self)
+            self._menu_list[name].setCheckable(True)
+            self._menu_list[name].setChecked(True)
+            self._menuComponents.addAction(self._menu_list[name])
 
         menubar = self.menuBar()
         menubar.addAction(self._soundAction)
         self._soundAction.setEnabled(False)
         menubar.addAction(self._menuComponents.menuAction())
         menubar.addAction(self._closeAction)
+
+    # ----------------------------------------------------------------------
+    def _setupGui(self):
+
+        condition_grid = QtGui.QGridLayout(self._ui.layout_conditions)
+        layout = condition_grid.layout()
+        for i in reversed(range(layout.count())):
+            item = layout.itemAt(i)
+            if item:
+                w = layout.itemAt(i).widget()
+                if w:
+                    layout.removeWidget(w)
+                    w.setVisible(False)
+
+        self.widgets = {}
+        counter = 0
+        row = 0
+        for name in self._conditions_names:
+            self.widgets[name] = Condition(name)
+            layout.addWidget(self.widgets[name], row, counter)
+            counter += 1
+            if counter == self.WIDGETS_PER_ROW:
+                counter = 0
+                row += 1
 
     # ----------------------------------------------------------------------
     def _sendTest(self):
@@ -104,110 +139,33 @@ class MainRoutine(QtGui.QMainWindow):
     # ----------------------------------------------------------------------
     def _refreshStatus(self):
 
-        try:
-            maxLm4 = self.LM4_proxy.Frame.max()
-        except:
-            maxLm4 = False
+        self.beam_status = True
+        faulte_devices = []
 
-        try:
-            v2State = self.V2_proxy.stellung[0]
-        except:
-            v2State = False
-
-        try:
-            PBunches = self.PETRA_proxy.NumberOfBunches
-            gotPbunches = True
-        except:
-            gotPbunches = False
-
-        try:
-            PCurrent = self.PETRA_proxy.BeamCurrent
-            gotPcurrent = True
-        except:
-            gotPcurrent = False
-
-        try:
-            ps2State = self.PS2_proxy.stellung[0]
-        except:
-            ps2State = False
-
-        try:
-            energyText = "{:.2f} eV".format(self.DCM_proxy.position)
-        except:
-            energyText = 'OK'
-
-        beamOk = True
-
-        if v2State:
-            if int(v2State) != 2:
-                if self._monitorV2.isChecked():
-                    beamOk = False
-                self._ui.lbV2.setText("closed")
-                self._ui.lbV2.setStyleSheet('color: red')
+        for name in self._conditions_names:
+            status, ui_text = self.conditions[name].get_state()
+            self.widgets[name]._ui.lb_State.setText(ui_text)
+            if status == 'not_ok':
+                self.widgets[name]._ui.lb_State.setStyleSheet('color: red')
+                if self._menu_list[name].isChecked():
+                    self.beam_status *= 0
+                    faulte_devices.append(name)
+            elif status == 'ok':
+                self.widgets[name]._ui.lb_State.setStyleSheet('color: green')
             else:
-                self._ui.lbV2.setText("open")
-                self._ui.lbV2.setStyleSheet('color: green')
-        else:
-            self._ui.lbV2.setText("NC")
-            self._ui.lbV2.setStyleSheet('color: orange')
+                self.widgets[name]._ui.lb_State.setStyleSheet('color: orange')
 
-        if maxLm4:
-            if maxLm4 < 50:
-                if self._monitorLM4.isChecked():
-                    beamOk = False
-                self._ui.lbLM4.setText("no beam")
-                self._ui.lbLM4.setStyleSheet('color: red')
-            else:
-                self._ui.lbLM4.setText("OK")
-                self._ui.lbLM4.setStyleSheet('color: green')
-        else:
-            self._ui.lbLM4.setText("NC")
-            self._ui.lbLM4.setStyleSheet('color: orange')
-
-        if gotPbunches:
-            self._ui.lbPbunches.setText('{}'.format(int(PBunches)))
-            if int(PBunches) in [40, 80, 480]:
-                self._ui.lbPbunches.setStyleSheet('color: green')
-            else:
-                if self._monitorPETRAbunches.isChecked():
-                    beamOk = False
-                self._ui.lbPbunches.setStyleSheet('color: red')
-        else:
-            self._ui.lbPbunches.setText('NC')
-            self._ui.lbPbunches.setStyleSheet('color: orange')
-
-
-        if gotPcurrent:
-            self._ui.lbPcurrent.setText('{}'.format(int(PCurrent)))
-            if int(PCurrent) < 60:
-                if self._monitorPETRAcurrent.isChecked():
-                    beamOk = False
-                self._ui.lbPcurrent.setStyleSheet('color: red')
-            elif int(PCurrent) < 65:
-                self._ui.lbPcurrent.setStyleSheet('color: orange')
-            else:
-                self._ui.lbPcurrent.setStyleSheet('color: green')
-        else:
-            self._ui.lbPcurrent.setText('NC')
-            self._ui.lbPcurrent.setStyleSheet('color: orange')
-
-        if ps2State:
-            if int(ps2State) != 2:
-                if self._monitorPS2.isChecked():
-                    beamOk = False
-                self._ui.lbPS2.setText("closed")
-                self._ui.lbPS2.setStyleSheet('color: red')
-            else:
-                self._ui.lbPS2.setText("open")
-                self._ui.lbPS2.setStyleSheet('color: green')
-        else:
-            self._ui.lbPS2.setText("NC")
-            self._ui.lbPS2.setStyleSheet('color: orange')
-
-        if not beamOk:
-            self.status = False
+        if not self.beam_status:
+            self.show()
             self._ui.lbStatus.setText("not OK")
             self._ui.lbStatus.setStyleSheet('color: red')
+
+            if self._show_msg_box and not self._msg_box_showed:
+                self._msg_box_showed = False
+                msg = "Probles with: "
+                msg += ', '.join(faulte_devices)
+
+                QtGui.QMessageBox.warning(self, "Beam problem", msg, QtGui.QMessageBox.Ok)
 
             if self.playSound:
                 if time.time() > self.lastSoundTime + self.SoundRepeatTime:
@@ -216,21 +174,24 @@ class MainRoutine(QtGui.QMainWindow):
                     self._soundAction.setEnabled(True)
                     playsound.playsound('./{}.mp3'.format(self.sound), True)
 
-            if not self.lostNotificationSent:
-                self.notifyChannel.send('Beam lost')
-                self.backNotificationSent = False
-                self.lostNotificationSent = True
+            if self._notify:
+                if not self.lostNotificationSent:
+                    self.notifyChannel.send('Beam lost')
+                    self.backNotificationSent = False
+                    self.lostNotificationSent = True
         else:
+            self._msg_box_showed = False
+
             self.playSound = True
             self._soundAction.setEnabled(False)
-            self.status = True
-            self._ui.lbStatus.setText(energyText)
+            self._ui.lbStatus.setText('OK')
             self._ui.lbStatus.setStyleSheet('color: green')
 
-            if not self.backNotificationSent:
-                self.notifyChannel.send('Beam back')
-                self.backNotificationSent = True
-                self.lostNotificationSent = False
+            if self._notify:
+                if not self.backNotificationSent:
+                    self.notifyChannel.send('Beam back')
+                    self.backNotificationSent = True
+                    self.lostNotificationSent = False
 
         self.statusBarLabel.setText("Sound: {}".format(str(self.playSound)))
 
@@ -243,25 +204,35 @@ class MainRoutine(QtGui.QMainWindow):
             self._soundAction.setText('Turn on sound')
 
     # ----------------------------------------------------------------------
-    def _startServer(self):
-        if not self._thread_running:
-            self.run()
-        else:
-            self.stopServerBucket.put('1')
-
-    # ----------------------------------------------------------------------
     def closeEvent(self, event):
         if self.exitOnClose:
-            # self.stopServerBucket.put('1')
+            self.tray_icon.hide()
+            del self.tray_icon
             event.accept()
         else:
+            self.hide()
+            self.tray_icon.show()
             event.setAccepted(True)
             event.ignore()
 
     # ----------------------------------------------------------------------
+    def _iconClicked(self, reason):
+        if reason == QtGui.QSystemTrayIcon.DoubleClick:
+            self._showMe()
+        elif reason == QtGui.QSystemTrayIcon.Trigger:
+            if self.beam_status:
+                text = 'OK'
+            else:
+                text = 'Not OK'
+            self.tray_icon.showMessage("Beam monitor",
+                                        "Beam status: {}".format(text),
+                                        QtGui.QSystemTrayIcon.Information,
+                                        2000)
+
+    # ----------------------------------------------------------------------
     def _showMe(self):
         self.show()
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _quitMe(self):
         self.exitOnClose = True
         self.close()

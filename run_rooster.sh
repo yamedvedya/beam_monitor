@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python ./main.py --sound="Rooster"
+python ./run.py --sound="Rooster"

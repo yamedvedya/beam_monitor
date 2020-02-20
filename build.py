@@ -6,7 +6,7 @@
 # Last modified: 2017, July 5
 # ----------------------------------------------------------------------
 
-"""Compiles ui and rcc files (works on Linux/Windows, with PyQt/PySide).
+"""Compiles uis and rcc files (works on Linux/Windows, with PyQt/PySide).
 
 Usage:
      ./build.py [qtlib] [os]
@@ -33,26 +33,14 @@ ui_compilers = {"linux": {
     }
 }
 
-rc_compilers = {"linux": {
-    "pyqt": "pyrcc4",
-    "pyside": "pyside-rcc"
-},
-    "windows": {
-        "pyqt": "E:\\Python27\\lib\\site-packages\\PyQt4\\pyrcc4.bat",
-        "pyside": ""
-    }
-}
-
-
 # ----------------------------------------------------------------------
-def compile_uis(ui_compiler, rc_compiler, pathname):
+def compile_uis(ui_compiler, pathname):
     """
     """
     for f in [f for f in os.listdir(pathname) if os.path.isfile(os.path.join(pathname, f))
-                                               and os.path.splitext(f)[-1] in [".ui",
-                                                                               ".qrc"]]:  # simplify this loop TODO
+                                               and os.path.splitext(f)[-1] in [".uis"]]:
         base, ext = os.path.splitext(f)
-        post, comp = ("_ui", ui_compiler) if ext == ".ui" else ("_rc", rc_compiler)
+        post, comp = ("_ui", ui_compiler)
 
         cmd = "{} {}/{} -o {}/{}{}.py".format(comp, pathname, f, pathname, base, post)
         print(cmd)
@@ -62,18 +50,16 @@ def compile_uis(ui_compiler, rc_compiler, pathname):
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
 
-    pathname = os.path.dirname(sys.argv[0])
+    pathname = os.path.dirname(sys.argv[0]) + '/uis'
 
     lib_name, sys_name = "pyqt", "linux"
-
     if len(sys.argv) > 1:
         lib_name = sys.argv[1].lower()
 
     if len(sys.argv) > 2:
         sys_name = sys.argv[2].lower()
 
-    compile_uis(ui_compilers[sys_name][lib_name],
-                rc_compilers[sys_name][lib_name], pathname)
+    compile_uis(ui_compilers[sys_name][lib_name], pathname)
 
     print("All OK!")
 
