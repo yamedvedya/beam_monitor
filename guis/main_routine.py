@@ -2,7 +2,7 @@ import inspect
 import playsound
 from distutils.util import strtobool
 import time
-import conditions as conditions_list
+import conditions_sample as conditions_list
 
 from PyQt4 import QtGui, QtCore
 from mainwindow_ui import Ui_Beam_Monitor
