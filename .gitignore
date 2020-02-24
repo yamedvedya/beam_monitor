@@ -1,3 +1,4 @@
 /.idea
-/uis
+/guis/condition_ui.py
+/guis/mainwindow_ui.py
 conditions.py
