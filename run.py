@@ -1,7 +1,7 @@
 import sys
 
 from PyQt4 import QtGui
-from main_routine import MainRoutine
+from src.main_routine import MainRoutine
 from optparse import OptionParser
 
 

@@ -34,7 +34,7 @@ ui_compilers = {"linux": {
 }
 
 # ----------------------------------------------------------------------
-def compile_uis(ui_compiler, sourcepath, compiledpath):
+def compile_uis(ui_compiler, sourcepath):
     """
     """
     for f in [f for f in os.listdir(sourcepath) if os.path.isfile(os.path.join(sourcepath, f))
@@ -42,7 +42,7 @@ def compile_uis(ui_compiler, sourcepath, compiledpath):
         base, ext = os.path.splitext(f)
         post, comp = ("_ui", ui_compiler)
 
-        cmd = "{} {}/{} -o {}/{}{}.py".format(comp, sourcepath, f, compiledpath, base, post)
+        cmd = "{} {}/{} -o {}/{}{}.py".format(comp, sourcepath, f, sourcepath, base, post)
         print(cmd)
         os.system(cmd)
 
@@ -51,7 +51,6 @@ def compile_uis(ui_compiler, sourcepath, compiledpath):
 if __name__ == "__main__":
 
     sourcepath = os.path.dirname(sys.argv[0]) + '/uis'
-    compiledpath = os.path.dirname(sys.argv[0]) + '/guis'
 
     lib_name, sys_name = "pyqt", "linux"
     if len(sys.argv) > 1:
@@ -60,7 +59,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 2:
         sys_name = sys.argv[2].lower()
 
-    compile_uis(ui_compilers[sys_name][lib_name], sourcepath, compiledpath)
+    compile_uis(ui_compilers[sys_name][lib_name], sourcepath)
 
     print("All OK!")
 

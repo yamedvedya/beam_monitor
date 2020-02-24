@@ -1,5 +1,5 @@
 from PyQt4 import QtGui
-from condition_ui import Ui_condition
+from uis.condition_ui import Ui_condition
 
 # ----------------------------------------------------------------------
 class Condition(QtGui.QWidget):

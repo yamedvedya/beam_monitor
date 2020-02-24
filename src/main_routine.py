@@ -5,8 +5,8 @@ import time
 import conditions as conditions_list
 
 from PyQt4 import QtGui, QtCore
-from mainwindow_ui import Ui_Beam_Monitor
-from condition import Condition
+from uis.mainwindow_ui import Ui_Beam_Monitor
+from src.condition import Condition
 
 # ----------------------------------------------------------------------
 class MainRoutine(QtGui.QMainWindow):
