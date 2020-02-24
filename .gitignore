@@ -133,3 +133,5 @@ dmypy.json
 # Project related ignores
 /uis/condition_ui.py
 /uis/mainwindow_ui.py
+conditions.py
+/.idea
