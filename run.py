@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_option("-s", "--sound", dest="sound",
                       help="Sound file", default='Fire')
     parser.add_option("-a", "--alarm", dest="alarm",
-                      help="True or False", default='False')
+                      help="True or False", default='True')
     parser.add_option("-m", "--msgbox", dest="msgbox",
                       help="True or False", default='False')
     (options, _) = parser.parse_args()

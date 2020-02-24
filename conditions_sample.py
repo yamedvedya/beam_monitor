@@ -116,7 +116,7 @@ class Petra_Current(object):
             gotPcurrent = False
 
         if gotPcurrent:
-            ui_text = '{}'.format(int(PCurrent))
+            ui_text = '{} mA'.format(int(PCurrent))
             if int(PCurrent) < 60:
                 status = 'not_ok'
             else:
