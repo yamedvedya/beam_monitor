@@ -1,12 +1,12 @@
 import sys
 
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 from src.main_routine import MainRoutine
 from optparse import OptionParser
 
 
 def move2RightBottomCorner(win):
-    screen_geometry = QtGui.QApplication.desktop().availableGeometry()
+    screen_geometry = QtWidgets.QApplication.desktop().availableGeometry()
     screen_size = (screen_geometry.width(), screen_geometry.height())
     win_size = (win.frameSize().width(), win.frameSize().height())
     x = screen_size[0] - win_size[0]
@@ -28,7 +28,7 @@ if __name__ == "__main__":
                       help="True or False", default='False')
     (options, _) = parser.parse_args()
 
-    app = QtGui.QApplication(sys.argv)          # don't pass any args here!
+    app = QtWidgets.QApplication(sys.argv)          # don't pass any args here!
 
     mainWindow = MainRoutine(options)
     mainWindow.move(mainWindow.width() * -3, 0)

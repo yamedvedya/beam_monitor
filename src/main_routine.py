@@ -1,15 +1,14 @@
 import inspect
-import playsound
 from distutils.util import strtobool
 import time
 import conditions as conditions_list
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 from uis.mainwindow_ui import Ui_Beam_Monitor
 from src.condition import Condition
 
 # ----------------------------------------------------------------------
-class MainRoutine(QtGui.QMainWindow):
+class MainRoutine(QtWidgets.QMainWindow):
 
     SoundRepeatTime = 1
     WIDGETS_PER_ROW = 3
@@ -32,11 +31,11 @@ class MainRoutine(QtGui.QMainWindow):
 
         self.beam_status = True
 
-        self.tray_icon = QtGui.QSystemTrayIcon(self)
-        self.tray_icon.setIcon(self.style().standardIcon(QtGui.QStyle.SP_ComputerIcon))
-        show_action = QtGui.QAction("Show", self)
-        quit_action = QtGui.QAction("Exit", self)
-        tray_menu = QtGui.QMenu()
+        self.tray_icon = QtWidgets.QSystemTrayIcon(self)
+        self.tray_icon.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_ComputerIcon))
+        show_action = QtWidgets.QAction("Show", self)
+        quit_action = QtWidgets.QAction("Exit", self)
+        tray_menu = QtWidgets.QMenu()
         tray_menu.addAction(show_action)
         tray_menu.addAction(quit_action)
         show_action.triggered.connect(self._showMe)
@@ -57,11 +56,16 @@ class MainRoutine(QtGui.QMainWindow):
         self._show_msg_box = strtobool(options.msgbox)
         self._msg_box_showed = False
 
-        self.sound = options.sound
-        self.playSound = strtobool(options.alarm)
-        self.lastSoundTime = time.time()
+        if strtobool(options.notify):
+            import playsound as psound
+            self.sound_option = True
+            self.sound_on = strtobool(options.alarm)
+            self.lastSoundTime = time.time()
+        else:
+            self.sound_option = False
+            self.sound_on = False
 
-        self.statusBarLabel = QtGui.QLabel("Sound: {}".format(str(self.playSound)))
+        self.statusBarLabel = QtWidgets.QLabel("Sound: {}".format(str(self.sound_on)))
         self.statusBar().addPermanentWidget(self.statusBarLabel)
         self._refreshTimer = QtCore.QTimer(self)
         self._refreshTimer.timeout.connect(self._refreshStatus)
@@ -85,18 +89,18 @@ class MainRoutine(QtGui.QMainWindow):
     # ----------------------------------------------------------------------
     def _setupMenu(self):
 
-        self._soundAction = QtGui.QAction("Turn off sound", self,
+        self._soundAction = QtWidgets.QAction("Turn off sound_option", self,
                                                triggered=self._trunOnSound)
         self._soundAction.setCheckable(True)
 
-        self._closeAction = QtGui.QAction("Exit", self,
+        self._closeAction = QtWidgets.QAction("Exit", self,
                                           triggered=self._quitMe)
 
-        self._menuComponents = QtGui.QMenu("Values to be monitored", self)
+        self._menuComponents = QtWidgets.QMenu("Values to be monitored", self)
         self._menu_list = {}
 
         for name in self._conditions_names:
-            self._menu_list[name] = QtGui.QAction("Monitor {}".format(name), self)
+            self._menu_list[name] = QtWidgets.QAction("Monitor {}".format(name), self)
             self._menu_list[name].setCheckable(True)
             self._menu_list[name].setChecked(True)
             self._menuComponents.addAction(self._menu_list[name])
@@ -110,7 +114,7 @@ class MainRoutine(QtGui.QMainWindow):
     # ----------------------------------------------------------------------
     def _setupGui(self):
 
-        condition_grid = QtGui.QGridLayout(self._ui.layout_conditions)
+        condition_grid = QtWidgets.QGridLayout(self._ui.layout_conditions)
         layout = condition_grid.layout()
         for i in reversed(range(layout.count())):
             item = layout.itemAt(i)
@@ -165,14 +169,14 @@ class MainRoutine(QtGui.QMainWindow):
                 msg = "Probles with: "
                 msg += ', '.join(faulte_devices)
 
-                QtGui.QMessageBox.warning(self, "Beam problem", msg, QtGui.QMessageBox.Ok)
+                QtWidgets.QMessageBox.warning(self, "Beam problem", msg, QtWidgets.QMessageBox.Ok)
 
-            if self.playSound:
+            if self.sound_option and self.sound_on:
                 if time.time() > self.lastSoundTime + self.SoundRepeatTime:
                     self.lastSoundTime = time.time()
-                    self._soundAction.setText('Turn off sound')
+                    self._soundAction.setText('Turn off sound_option')
                     self._soundAction.setEnabled(True)
-                    playsound.playsound('./resources/{}.mp3'.format(self.sound), True)
+                    psound.playsound('./resources/{}.mp3'.format(self.sound_option), True)
 
             if self._notify:
                 if not self.lostNotificationSent:
@@ -182,7 +186,9 @@ class MainRoutine(QtGui.QMainWindow):
         else:
             self._msg_box_showed = False
 
-            self.playSound = True
+            if self.sound_option:
+                self.sound_on = True
+
             self._soundAction.setEnabled(False)
             self._ui.lbStatus.setText('OK')
             self._ui.lbStatus.setStyleSheet('color: green')
@@ -193,15 +199,15 @@ class MainRoutine(QtGui.QMainWindow):
                     self.backNotificationSent = True
                     self.lostNotificationSent = False
 
-        self.statusBarLabel.setText("Sound: {}".format(str(self.playSound)))
+        self.statusBarLabel.setText("Sound: {}".format(str(self.sound_on)))
 
     # ----------------------------------------------------------------------
     def _trunOnSound(self):
-        self.playSound = not self.playSound
-        if self.playSound:
-            self._soundAction.setText('Turn off sound')
+        self.sound_on = not self.sound_on
+        if self.sound_on:
+            self._soundAction.setText('Turn off sound_option')
         else:
-            self._soundAction.setText('Turn on sound')
+            self._soundAction.setText('Turn on sound_option')
 
     # ----------------------------------------------------------------------
     def closeEvent(self, event):
@@ -217,16 +223,16 @@ class MainRoutine(QtGui.QMainWindow):
 
     # ----------------------------------------------------------------------
     def _iconClicked(self, reason):
-        if reason == QtGui.QSystemTrayIcon.DoubleClick:
+        if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
             self._showMe()
-        elif reason == QtGui.QSystemTrayIcon.Trigger:
+        elif reason == QtWidgets.QSystemTrayIcon.Trigger:
             if self.beam_status:
                 text = 'OK'
             else:
                 text = 'Not OK'
             self.tray_icon.showMessage("Beam monitor",
                                         "Beam status: {}".format(text),
-                                        QtGui.QSystemTrayIcon.Information,
+                                        QtWidgets.QSystemTrayIcon.Information,
                                         2000)
 
     # ----------------------------------------------------------------------

@@ -1,8 +1,8 @@
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 from uis.condition_ui import Ui_condition
 
 # ----------------------------------------------------------------------
-class Condition(QtGui.QWidget):
+class Condition(QtWidgets.QWidget):
 
     # ----------------------------------------------------------------------
     def __init__(self, caption):

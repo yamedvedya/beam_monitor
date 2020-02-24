@@ -24,11 +24,11 @@ import sys
 # ----------------------------------------------------------------------
 
 ui_compilers = {"linux": {
-    "pyqt": "pyuic4",
+    "pyqt": "pyuic",
     "pyside": "pyside-uic"
 },
     "windows": {
-        "pyqt": "E:\\Python27\\lib\\site-packages\\PyQt4\\pyuic4.bat",
+        "pyqt": "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyuic5.exe",
         "pyside": ""
     }
 }
@@ -38,7 +38,7 @@ def compile_uis(ui_compiler, sourcepath):
     """
     """
     for f in [f for f in os.listdir(sourcepath) if os.path.isfile(os.path.join(sourcepath, f))
-                                               and os.path.splitext(f)[-1] in [".uis"]]:
+                                               and os.path.splitext(f)[-1] in [".ui"]]:
         base, ext = os.path.splitext(f)
         post, comp = ("_ui", ui_compiler)
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     sourcepath = os.path.dirname(sys.argv[0]) + '/uis'
 
-    lib_name, sys_name = "pyqt", "linux"
+    lib_name, sys_name = "pyqt", "windows"
     if len(sys.argv) > 1:
         lib_name = sys.argv[1].lower()
 
