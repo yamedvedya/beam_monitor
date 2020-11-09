@@ -14,7 +14,7 @@ from src.server import Info_Server
 from settings import *
 
 from PyQt5 import QtWidgets, QtCore
-from uis.mainwindow_ui import Ui_Beam_Monitor
+from gui.mainwindow_ui import Ui_Beam_Monitor
 from src.condition import Condition
 
 # ----------------------------------------------------------------------
@@ -33,8 +33,8 @@ class MainRoutine(QtWidgets.QMainWindow):
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
         self._get_conditions()
-        self._setupMenu()
         self._setupGui()
+        self._setupMenu()
 
         self.beam_status = True
 
@@ -103,12 +103,20 @@ class MainRoutine(QtWidgets.QMainWindow):
 
         self._menuComponents = QtWidgets.QMenu("Values to be monitored", self)
         self._menu_list = {}
+        self._setup_condition = {}
 
         for name in self._conditions_names:
-            self._menu_list[name] = QtWidgets.QAction("Monitor {}".format(name), self)
+            menu = QtWidgets.QMenu("{}".format(name), self)
+            self._menu_list[name] = QtWidgets.QAction('Monitor')
             self._menu_list[name].setCheckable(True)
             self._menu_list[name].setChecked(True)
-            self._menuComponents.addAction(self._menu_list[name])
+            menu.addAction(self._menu_list[name])
+
+            self._setup_condition[name] = QtWidgets.QAction('Setup')
+            self._setup_condition[name].triggered.connect(self.widgets[name].setup_condition)
+            menu.addAction(self._setup_condition[name])
+
+            self._menuComponents.addMenu(menu)
 
         menubar = self.menuBar()
         menubar.addAction(self._soundAction)

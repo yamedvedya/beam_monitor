@@ -10,42 +10,57 @@ import os
 import sys
 
 # ----------------------------------------------------------------------
+in_dirs = ["uis"]
+out_dirs = ["gui"]
 
-ui_compilers = {"linux": {
-    "pyqt": "python -m PyQt5.uic.pyuic",
-},
-    "windows": {
-        "pyqt": "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyuic5.exe",
-    }
-}
+ui_compilers = {"linux2": "python -m PyQt5.uic.pyuic",
+                "win32": "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyuic5.exe"}
+
+rc_compilers = {"linux2": "python -m PyQt5.uic.pyrcc",
+                "win32":  "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyrcc5.exe"}
 
 # ----------------------------------------------------------------------
-def compile_uis(ui_compiler, sourcepath):
+def compile_uis(ui_compiler, rc_compiler, in_dirs, out_dirs):
     """
     """
-    for f in [f for f in os.listdir(sourcepath) if os.path.isfile(os.path.join(sourcepath, f))
-                                               and os.path.splitext(f)[-1] in [".ui"]]:
-        base, ext = os.path.splitext(f)
-        post, comp = ("_ui", ui_compiler)
+    for in_dir, out_dir in zip(in_dirs, out_dirs):
+        for f in [f for f in os.listdir(in_dir) if os.path.isfile(os.path.join(in_dir, f))
+                                                   and os.path.splitext(f)[-1] in [".ui",
+                                                                                   ".qrc"]]:  # simplify this loop TODO
+            base, ext = os.path.splitext(f)
+            post, comp = ("_ui", ui_compiler) if ext == ".ui" else ("_rc", rc_compiler)
 
-        cmd = "{} {}/{} -o {}/{}{}.py".format(comp, sourcepath, f, sourcepath, base, post)
-        print(cmd)
-        os.system(cmd)
+            cmd = "{} {}/{} -o {}/{}{}.py".format(comp, in_dir, f, out_dir, base, post)
+            print(cmd)
+            os.system(cmd)
 
 
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
 
-    sourcepath = os.path.dirname(sys.argv[0]) + '/uis'
+    print("Removing pyc files...")
 
-    lib_name, sys_name = "pyqt", "linux"
-    if len(sys.argv) > 1:
-        lib_name = sys.argv[1].lower()
+    for out_dir in out_dirs:
+        for root, dirs, files in os.walk(out_dir):
+            for f in [f for f in files if f.endswith(".pyc")]:
+                if sys.platform == "linux" or sys.platform == "linux2":
+                    os.system("rm {}".format(os.path.join(root, f)))
+                elif sys.platform == "win32":
+                    os.remove(os.path.join(root, f))
 
-    if len(sys.argv) > 2:
-        sys_name = sys.argv[2].lower()
+    print("Removing uis and rcs...")
+    for out_dir in out_dirs:
+        for root, dirs, files in os.walk(out_dir):
+            for f in [f for f in files if (f.endswith(".pyc") or f.endswith(".py"))
+                                          and f != "__init__.py"]:
+                if sys.platform == "linux" or sys.platform == "linux2":
+                    os.system("rm {}".format(os.path.join(root, f)))
+                elif sys.platform == "win32":
+                    os.remove(os.path.join(root, f))
 
-    compile_uis(ui_compilers[sys_name][lib_name], sourcepath)
+    print("All removed!")
+
+    compile_uis(ui_compilers[sys.platform],
+                rc_compilers[sys.platform], in_dirs, out_dirs)
 
     print("All OK!")
-

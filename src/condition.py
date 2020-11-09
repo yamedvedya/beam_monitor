@@ -5,7 +5,7 @@
 
 
 from PyQt5 import QtWidgets, QtCore
-from uis.condition_ui import Ui_condition
+from gui.condition_ui import Ui_condition
 from src.condition_setup import ConditionSetup
 
 

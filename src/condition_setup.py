@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
-from uis.condition_setup_ui import Ui_ConditionSetup
+from gui.condition_setup_ui import Ui_ConditionSetup
 
 
 # ----------------------------------------------------------------------
@@ -29,21 +29,24 @@ class ConditionSetup(QtWidgets.QDialog):
             self.threshold_ui.setMinimum(ui_params[0])
             self.threshold_ui.setMaximum(ui_params[1])
             self.threshold_ui.setProperty("value", current_value)
+            self.threshold_ui.valueChanged.connect(self._condition_class.set_threshold)
         elif self.ui_type.lower() == 'doublespinbox':
             self.threshold_ui = QtWidgets.QDoubleSpinBox(self)
             self.threshold_ui.setMinimum(ui_params[0])
             self.threshold_ui.setMaximum(ui_params[1])
             self.threshold_ui.setProperty("value", current_value)
+            self.threshold_ui.valueChanged.connect(self._condition_class.set_threshold)
         elif self.ui_type.lower() == 'combobox':
             self.threshold_ui = QtWidgets.QComboBox(self)
             self.threshold_ui.addItems(ui_params)
             refresh_combo_box(self.threshold_ui, str(current_value))
+            self.threshold_ui.currentTextChanged.connect(lambda text: self._condition_class.set_threshold(int(text)))
         else:
             self.threshold_ui = None
 
         refresh_combo_box(self._ui.cmb_condition, str(current_mode))
         self._ui.cmb_condition.setEnabled(adjustable_condition)
-        self._ui.cmb_condition.currentTextChanged.connect(self._condition_class.set_threshold)
+        self._ui.cmb_condition.currentTextChanged.connect(self._condition_class.set_mode)
 
         if self.threshold_ui is not None:
             self.threshold_ui.setObjectName("threshold_ui")

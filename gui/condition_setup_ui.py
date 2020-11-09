@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/p23user/utils/beam_monitor/uis/condition_setup.ui'
+# Form implementation generated from reading ui file 'uis/condition_setup.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_ConditionSetup(object):
     def setupUi(self, ConditionSetup):
         ConditionSetup.setObjectName("ConditionSetup")
-        ConditionSetup.resize(258, 147)
+        ConditionSetup.resize(258, 114)
         self.verticalLayout = QtWidgets.QVBoxLayout(ConditionSetup)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
@@ -60,15 +62,8 @@ class Ui_ConditionSetup(object):
         self.cmb_condition.addItem("")
         self.horizontalLayout_2.addWidget(self.cmb_condition)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
-        self.buttonBox = QtWidgets.QDialogButtonBox(ConditionSetup)
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
-        self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(ConditionSetup)
-        self.buttonBox.accepted.connect(ConditionSetup.accept)
-        self.buttonBox.rejected.connect(ConditionSetup.reject)
         QtCore.QMetaObject.connectSlotsByName(ConditionSetup)
 
     def retranslateUi(self, ConditionSetup):
@@ -81,4 +76,3 @@ class Ui_ConditionSetup(object):
         self.cmb_condition.setItemText(0, _translate("ConditionSetup", "Equal"))
         self.cmb_condition.setItemText(1, _translate("ConditionSetup", "Less"))
         self.cmb_condition.setItemText(2, _translate("ConditionSetup", "More"))
-
