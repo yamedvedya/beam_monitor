@@ -189,7 +189,7 @@ class MainRoutine(QtWidgets.QMainWindow):
                     self.lastSoundTime = time.time()
                     self._soundAction.setText('Turn off sound_option')
                     self._soundAction.setEnabled(True)
-                    psound.playsound('./resources/{}.mp3'.format(self.sound), True)
+                    psound.playsound('./resources/{}.mp3'.format(self.sound), False)
 
             if self._notify:
                 if not self.lostNotificationSent:
