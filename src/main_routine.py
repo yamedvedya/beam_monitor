@@ -128,7 +128,7 @@ class MainRoutine(QtWidgets.QMainWindow):
         counter = 0
         row = 0
         for name in self._conditions_names:
-            self.widgets[name] = Condition(name)
+            self.widgets[name] = Condition(name, self.conditions[name])
             layout.addWidget(self.widgets[name], row, counter)
             counter += 1
             if counter == self.WIDGETS_PER_ROW:
@@ -238,6 +238,7 @@ class MainRoutine(QtWidgets.QMainWindow):
     # ----------------------------------------------------------------------
     def _showMe(self):
         self.show()
+
     # ----------------------------------------------------------------------
     def _quitMe(self):
         self.exitOnClose = True

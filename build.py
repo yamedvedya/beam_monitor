@@ -24,12 +24,10 @@ import sys
 # ----------------------------------------------------------------------
 
 ui_compilers = {"linux": {
-    "pyqt": "pyuic",
-    "pyside": "pyside-uic"
+    "pyqt": "python -m PyQt5.uic.pyuic",
 },
     "windows": {
         "pyqt": "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyuic5.exe",
-        "pyside": ""
     }
 }
 
@@ -52,7 +50,7 @@ if __name__ == "__main__":
 
     sourcepath = os.path.dirname(sys.argv[0]) + '/uis'
 
-    lib_name, sys_name = "pyqt", "windows"
+    lib_name, sys_name = "pyqt", "linux"
     if len(sys.argv) > 1:
         lib_name = sys.argv[1].lower()
 
