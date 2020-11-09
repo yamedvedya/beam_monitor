@@ -1,8 +1,7 @@
-# ----------------------------------------------------------------------
-# Author:   y.matveev@gmail.com
-# Modified: 26/02/2020
-# ----------------------------------------------------------------------
+BASEDIR=`dirname $0`
+cd $BASEDIR
 
-#!/bin/bash
+export VIEWERPATH=$PWD/
+export PYTHONPATH=$PYTHONPATH:$VIEWERPATH
 
 python ./run.py --sound="Rooster"
