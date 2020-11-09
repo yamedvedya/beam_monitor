@@ -1,20 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # ----------------------------------------------------------------------
-# Author:        sebastian.piec@desy.de
-# Last modified: 2017, July 5
+# Author:   y.matveev@gmail.com
+# Modified: 26/02/2020
 # ----------------------------------------------------------------------
 
-"""Compiles uis and rcc files (works on Linux/Windows, with PyQt/PySide).
-
-Usage:
-     ./build.py [qtlib] [os]
-
-e.g.:
-     ./build.py pyqt linux
-     ./build.py pyside windows
-"""
 
 from __future__ import print_function
 

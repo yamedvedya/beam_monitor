@@ -1,3 +1,9 @@
+# ----------------------------------------------------------------------
+# Author:   y.matveev@gmail.com
+# Modified: 26/02/2020
+# ----------------------------------------------------------------------
+
+
 from PyQt5 import QtWidgets
 from uis.condition_ui import Ui_condition
 

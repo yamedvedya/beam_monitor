@@ -1,7 +1,17 @@
+# ----------------------------------------------------------------------
+# Author:   y.matveev@gmail.com
+# Modified: 26/02/2020
+# ----------------------------------------------------------------------
+
+
 import inspect
 from distutils.util import strtobool
 import time
 import conditions as conditions_list
+import playsound as psound
+
+from src.server import Info_Server
+from settings import *
 
 from PyQt5 import QtWidgets, QtCore
 from uis.mainwindow_ui import Ui_Beam_Monitor
@@ -9,9 +19,6 @@ from src.condition import Condition
 
 # ----------------------------------------------------------------------
 class MainRoutine(QtWidgets.QMainWindow):
-
-    SoundRepeatTime = 1
-    WIDGETS_PER_ROW = 3
 
     # ----------------------------------------------------------------------
     def __init__(self, options):
@@ -56,14 +63,10 @@ class MainRoutine(QtWidgets.QMainWindow):
         self._show_msg_box = strtobool(options.msgbox)
         self._msg_box_showed = False
 
-        if strtobool(options.notify):
-            import playsound as psound
-            self.sound_option = True
-            self.sound_on = strtobool(options.alarm)
+        self.sound_on = self.sound_triggerd = strtobool(options.alarm)
+        if self.sound_on:
             self.lastSoundTime = time.time()
-        else:
-            self.sound_option = False
-            self.sound_on = False
+            self.sound = options.sound
 
         self.statusBarLabel = QtWidgets.QLabel("Sound: {}".format(str(self.sound_on)))
         self.statusBar().addPermanentWidget(self.statusBarLabel)
@@ -72,6 +75,8 @@ class MainRoutine(QtWidgets.QMainWindow):
         self._refreshTimer.start(500)
 
         self.exitOnClose = False
+
+        self._server = Info_Server(SERVER_HOST, SERVER_PORT, self)
 
         if strtobool(options.windowless):
             self.hide()
@@ -131,7 +136,7 @@ class MainRoutine(QtWidgets.QMainWindow):
             self.widgets[name] = Condition(name)
             layout.addWidget(self.widgets[name], row, counter)
             counter += 1
-            if counter == self.WIDGETS_PER_ROW:
+            if counter == WIDGETS_PER_ROW:
                 counter = 0
                 row += 1
 
@@ -171,12 +176,12 @@ class MainRoutine(QtWidgets.QMainWindow):
 
                 QtWidgets.QMessageBox.warning(self, "Beam problem", msg, QtWidgets.QMessageBox.Ok)
 
-            if self.sound_option and self.sound_on:
-                if time.time() > self.lastSoundTime + self.SoundRepeatTime:
+            if self.sound_triggerd and self.sound_on:
+                if time.time() > self.lastSoundTime + SOUNDREPEATTIME:
                     self.lastSoundTime = time.time()
                     self._soundAction.setText('Turn off sound_option')
                     self._soundAction.setEnabled(True)
-                    psound.playsound('./resources/{}.mp3'.format(self.sound_option), True)
+                    psound.playsound('./resources/{}.mp3'.format(self.sound), True)
 
             if self._notify:
                 if not self.lostNotificationSent:
@@ -186,8 +191,8 @@ class MainRoutine(QtWidgets.QMainWindow):
         else:
             self._msg_box_showed = False
 
-            if self.sound_option:
-                self.sound_on = True
+            if self.sound_on:
+                self.sound_triggered = True
 
             self._soundAction.setEnabled(False)
             self._ui.lbStatus.setText('OK')
@@ -199,12 +204,12 @@ class MainRoutine(QtWidgets.QMainWindow):
                     self.backNotificationSent = True
                     self.lostNotificationSent = False
 
-        self.statusBarLabel.setText("Sound: {}".format(str(self.sound_on)))
+        self.statusBarLabel.setText("Sound: {}".format(str(self.sound_on and self.sound_triggerd)))
 
     # ----------------------------------------------------------------------
     def _trunOnSound(self):
-        self.sound_on = not self.sound_on
-        if self.sound_on:
+        self.sound_triggered = not self.sound_triggered
+        if self.sound_triggered:
             self._soundAction.setText('Turn off sound_option')
         else:
             self._soundAction.setText('Turn on sound_option')
@@ -212,6 +217,7 @@ class MainRoutine(QtWidgets.QMainWindow):
     # ----------------------------------------------------------------------
     def closeEvent(self, event):
         if self.exitOnClose:
+            self._server.stop_server()
             self.tray_icon.hide()
             del self.tray_icon
             event.accept()
