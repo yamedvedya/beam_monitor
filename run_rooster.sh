@@ -3,5 +3,4 @@ cd $BASEDIR
 
 export VIEWERPATH=$PWD/
 export PYTHONPATH=$PYTHONPATH:$VIEWERPATH
-
-python ./run.py --sound="Rooster"
+./venv/bin/python ./run.py --sound="Rooster"

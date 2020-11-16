@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'uis/condition_setup.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_ConditionSetup(object):
     def setupUi(self, ConditionSetup):
@@ -76,3 +74,4 @@ class Ui_ConditionSetup(object):
         self.cmb_condition.setItemText(0, _translate("ConditionSetup", "Equal"))
         self.cmb_condition.setItemText(1, _translate("ConditionSetup", "Less"))
         self.cmb_condition.setItemText(2, _translate("ConditionSetup", "More"))
+

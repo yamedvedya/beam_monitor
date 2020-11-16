@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'uis/mainwindow.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Beam_Monitor(object):
     def setupUi(self, Beam_Monitor):
@@ -71,3 +69,4 @@ class Ui_Beam_Monitor(object):
         Beam_Monitor.setWindowTitle(_translate("Beam_Monitor", "Beam monitor"))
         self.label.setText(_translate("Beam_Monitor", "Beam:"))
         self.lbStatus.setText(_translate("Beam_Monitor", "OFF!!!"))
+

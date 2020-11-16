@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'uis/condition.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_condition(object):
     def setupUi(self, condition):
@@ -63,3 +61,4 @@ class Ui_condition(object):
         condition.setWindowTitle(_translate("condition", "Form"))
         self.lb_Caption.setText(_translate("condition", "nm"))
         self.lb_State.setText(_translate("condition", "eV"))
+

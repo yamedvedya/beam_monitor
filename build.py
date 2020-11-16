@@ -14,9 +14,11 @@ in_dirs = ["uis"]
 out_dirs = ["gui"]
 
 ui_compilers = {"linux2": "python -m PyQt5.uic.pyuic",
+                "linux": "python -m PyQt5.uic.pyuic",
                 "win32": "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyuic5.exe"}
 
 rc_compilers = {"linux2": "python -m PyQt5.uic.pyrcc",
+                "linux": "python -m PyQt5.uic.pyrcc",
                 "win32":  "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyrcc5.exe"}
 
 # ----------------------------------------------------------------------

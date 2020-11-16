@@ -17,6 +17,8 @@ from PyQt5 import QtWidgets, QtCore
 from gui.mainwindow_ui import Ui_Beam_Monitor
 from src.condition import Condition
 
+from threading import Thread
+
 # ----------------------------------------------------------------------
 class MainRoutine(QtWidgets.QMainWindow):
 
@@ -63,7 +65,7 @@ class MainRoutine(QtWidgets.QMainWindow):
         self._show_msg_box = strtobool(options.msgbox)
         self._msg_box_showed = False
 
-        self.sound_on = self.sound_triggerd = strtobool(options.alarm)
+        self.sound_on = self.sound_triggered = strtobool(options.alarm)
         if self.sound_on:
             self.lastSoundTime = time.time()
             self.sound = options.sound
@@ -184,12 +186,12 @@ class MainRoutine(QtWidgets.QMainWindow):
 
                 QtWidgets.QMessageBox.warning(self, "Beam problem", msg, QtWidgets.QMessageBox.Ok)
 
-            if self.sound_triggerd and self.sound_on:
+            if self.sound_triggered and self.sound_on:
                 if time.time() > self.lastSoundTime + SOUNDREPEATTIME:
                     self.lastSoundTime = time.time()
                     self._soundAction.setText('Turn off sound_option')
                     self._soundAction.setEnabled(True)
-                    psound.playsound('./resources/{}.mp3'.format(self.sound), True)
+                    Thread(target=psound.playsound('./resources/{}.mp3'.format(self.sound), True)).start()
 
             if self._notify:
                 if not self.lostNotificationSent:
@@ -212,7 +214,7 @@ class MainRoutine(QtWidgets.QMainWindow):
                     self.backNotificationSent = True
                     self.lostNotificationSent = False
 
-        self.statusBarLabel.setText("Sound: {}".format(str(self.sound_on and self.sound_triggerd)))
+        self.statusBarLabel.setText("Sound: {}".format(str(self.sound_on and self.sound_triggered)))
 
     # ----------------------------------------------------------------------
     def _trunOnSound(self):

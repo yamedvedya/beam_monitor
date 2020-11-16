@@ -40,7 +40,7 @@ class ConditionSetup(QtWidgets.QDialog):
             self.threshold_ui = QtWidgets.QComboBox(self)
             self.threshold_ui.addItems(ui_params)
             refresh_combo_box(self.threshold_ui, str(current_value))
-            self.threshold_ui.currentTextChanged.connect(lambda text: self._condition_class.set_threshold(int(text)))
+            self.threshold_ui.currentTextChanged.connect(lambda text: self._condition_class.set_threshold(text))
         else:
             self.threshold_ui = None
 
