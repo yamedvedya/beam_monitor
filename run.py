@@ -31,6 +31,8 @@ if __name__ == "__main__":
                       help="True or False", default='False')
     parser.add_option("-n", "--notify", dest="notify",
                       help="True or False", default='False')
+    parser.add_option("-p", "--port", dest="port",
+                      help="Server port", default='30786')
     (options, _) = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)          # don't pass any args here!

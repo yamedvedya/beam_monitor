@@ -6,17 +6,16 @@
 
 import PyTango
 import numpy as np
+from src.abstract_condition import AbstractCondition
 
-# ----------------------------------------------------------------------
-# each class has to have function "get_state" which has to return 1) status = "ok", "not_ok" or "nc" and
-#                                                                 2) ui_text
-# ----------------------------------------------------------------------
 
-class Petra_Current(object):
+class Petra_Current(AbstractCondition):
 
     # ----------------------------------------------------------------------
     def __init__(self):
-        self.device_proxy = PyTango.DeviceProxy('petra/globals/keywords')
+        super(Petra_Current, self).__init__()
+
+        self.device_proxy = PyTango.DeviceProxy('hasep23oh:10000/petra/globals/keywords')
         self._threshold = 90
         self._mode = 'More'
 
@@ -64,16 +63,19 @@ class Petra_Current(object):
 
         self._mode = mode
 
+
 # ----------------------------------------------------------------------
 #
 #
 # ----------------------------------------------------------------------
 
-class Petra_Bunches(object):
+class Petra_Bunches(AbstractCondition):
 
     # ----------------------------------------------------------------------
     def __init__(self):
-        self.device_proxy = PyTango.DeviceProxy('petra/globals/keywords')
+        super(Petra_Bunches, self).__init__()
+
+        self.device_proxy = PyTango.DeviceProxy('hasep23oh:10000/petra/globals/keywords')
         self.threshold = 480
 
     # ----------------------------------------------------------------------
@@ -112,21 +114,19 @@ class Petra_Bunches(object):
 
         self.threshold = value
 
-    # ----------------------------------------------------------------------
-    def set_mode(self, mode):
-
-        pass
 
 # ----------------------------------------------------------------------
 #
 #
 # ----------------------------------------------------------------------
 
-class Beam_Energy(object):
+class Beam_Energy(AbstractCondition):
 
     # ----------------------------------------------------------------------
     def __init__(self):
-        self.device_proxy = PyTango.DeviceProxy('p23/dcmener/oh.01')
+        super(Beam_Energy, self).__init__()
+
+        self.device_proxy = PyTango.DeviceProxy('hasep23oh:10000/p23/dcmener/oh.01')
         self.threshold = None
 
     # ----------------------------------------------------------------------
@@ -138,23 +138,3 @@ class Beam_Energy(object):
             ui_text = 'OK'
 
         return 'ok', ui_text
-
-    # ----------------------------------------------------------------------
-    def get_threshold(self):
-
-        return None, None
-
-    # ----------------------------------------------------------------------
-    def get_threshold_type(self):
-
-        return 'No', None, False
-
-    # ----------------------------------------------------------------------
-    def set_threshold(self, value, condition):
-
-        pass
-
-    # ----------------------------------------------------------------------
-    def set_mode(self, mode):
-
-        pass

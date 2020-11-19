@@ -15,7 +15,7 @@ from settings import *
 
 from PyQt5 import QtWidgets, QtCore
 from gui.mainwindow_ui import Ui_Beam_Monitor
-from src.condition import Condition
+from src.condition_widget import Condition
 
 from threading import Thread
 
@@ -56,7 +56,7 @@ class MainRoutine(QtWidgets.QMainWindow):
         if strtobool(options.notify):
             from notify_run import Notify
             self._notify = True
-            self.notifyChannel = Notify('https://notify.run/api/', 'https://notify.run/WBYSjwtglRmFnrxC')
+            self.notifyChannel = Notify('https://notify.run/api/', 'https://notify.run/ocnh6HqhiGAAnQQl')
             self.backNotificationSent = False
             self.lostNotificationSent = False
         else:
@@ -78,7 +78,7 @@ class MainRoutine(QtWidgets.QMainWindow):
 
         self.exitOnClose = False
 
-        self._server = Info_Server(SERVER_HOST, SERVER_PORT, self)
+        self._server = Info_Server('', int(options.port), self)
 
         if strtobool(options.windowless):
             self.hide()
@@ -87,7 +87,7 @@ class MainRoutine(QtWidgets.QMainWindow):
     # ----------------------------------------------------------------------
     def _get_conditions(self):
         self._conditions_names = [cls_name for cls_name, cls_obj in inspect.getmembers(conditions_list) if
-                                  inspect.isclass(cls_obj)]
+                                  inspect.isclass(cls_obj) and cls_name != 'AbstractCondition']
 
         self.conditions = {}
         for name in self._conditions_names:
@@ -96,34 +96,34 @@ class MainRoutine(QtWidgets.QMainWindow):
     # ----------------------------------------------------------------------
     def _setupMenu(self):
 
-        self._soundAction = QtWidgets.QAction("Turn off sound_option", self,
+        self._soundAction = QtWidgets.QAction("Turn off sound", self,
                                                triggered=self._trunOnSound)
         self._soundAction.setCheckable(True)
 
         self._closeAction = QtWidgets.QAction("Exit", self,
                                           triggered=self._quitMe)
 
-        self._menuComponents = QtWidgets.QMenu("Values to be monitored", self)
+        _menu_components = QtWidgets.QMenu("Values to be monitored", self)
+        _setup_menu = QtWidgets.QMenu("Setup thresholds", self)
+
         self._menu_list = {}
         self._setup_condition = {}
 
         for name in self._conditions_names:
-            menu = QtWidgets.QMenu("{}".format(name), self)
-            self._menu_list[name] = QtWidgets.QAction('Monitor')
+            self._menu_list[name] = QtWidgets.QAction('{}'.format(name))
             self._menu_list[name].setCheckable(True)
             self._menu_list[name].setChecked(True)
-            menu.addAction(self._menu_list[name])
+            _menu_components.addAction(self._menu_list[name])
 
-            self._setup_condition[name] = QtWidgets.QAction('Setup')
+            self._setup_condition[name] = QtWidgets.QAction('{}'.format(name))
             self._setup_condition[name].triggered.connect(self.widgets[name].setup_condition)
-            menu.addAction(self._setup_condition[name])
-
-            self._menuComponents.addMenu(menu)
+            _setup_menu.addAction(self._setup_condition[name])
 
         menubar = self.menuBar()
         menubar.addAction(self._soundAction)
         self._soundAction.setEnabled(False)
-        menubar.addAction(self._menuComponents.menuAction())
+        menubar.addAction(_menu_components.menuAction())
+        menubar.addAction(_setup_menu.menuAction())
         menubar.addAction(self._closeAction)
 
     # ----------------------------------------------------------------------
@@ -189,7 +189,7 @@ class MainRoutine(QtWidgets.QMainWindow):
             if self.sound_triggered and self.sound_on:
                 if time.time() > self.lastSoundTime + SOUNDREPEATTIME:
                     self.lastSoundTime = time.time()
-                    self._soundAction.setText('Turn off sound_option')
+                    self._soundAction.setText('Turn off sound')
                     self._soundAction.setEnabled(True)
                     Thread(target=psound.playsound('./resources/{}.mp3'.format(self.sound), True)).start()
 
@@ -220,9 +220,9 @@ class MainRoutine(QtWidgets.QMainWindow):
     def _trunOnSound(self):
         self.sound_triggered = not self.sound_triggered
         if self.sound_triggered:
-            self._soundAction.setText('Turn off sound_option')
+            self._soundAction.setText('Turn off sound')
         else:
-            self._soundAction.setText('Turn on sound_option')
+            self._soundAction.setText('Turn on sound')
 
     # ----------------------------------------------------------------------
     def closeEvent(self, event):

@@ -64,9 +64,9 @@ class Info_Server(object):
 
             for connection, address in self._connectionMap:
                 try:
-                    request = connection.recv(MAX_REQUEST_LEN)
+                    request = connection.recv(MAX_REQUEST_LEN).decode()
                     if request:
-                        connection.sendall(self._process_request(request))
+                        connection.sendall(self._process_request(request).encode())
                     else:
                         print('Client closed: {:s}'.format(address))
                         connection.close()
@@ -103,7 +103,7 @@ class Info_Server(object):
     def _process_request(self, request):
         """
         """
-        request = str(request).strip()  # NOTE: won't work in Python 3
+        request = str(request).strip()
         status, reply = self._command_dispatcher(request)
         print("Request: {}, Reply: status: '{}', reply: '{}'".format(request, status, reply))
         return json.dumps([status, reply])
@@ -118,24 +118,14 @@ class Info_Server(object):
 
         split = request.split(' ')
         try:
-            return self.CMD_MAP[split[0]](split[1:])
+            return self.CMD_MAP[split[0]]
         except KeyError as err:
             return False, 'KeyError'
 
     # ----------------------------------------------------------------------
-    def _status(self, params):
+    def _status(self):
 
-        ans = {}
-        for device in params:
-            try:
-                if self.devices[device]["ismoving"]:
-                    ans[device] = 'moving'
-                else:
-                    ans[device] = self.devices[device]['status']
-            except:
-                ans[device] = 'fault'
-
-        return True, ans
+        return True, self.parent.beam_status
 
     # ----------------------------------------------------------------------
     def _closeConnection(self, params):
