@@ -1,0 +1,5 @@
+beamline-monitor (1.1.0-1) buster bullseye; urgency=low
+
+  * source package automatically created by stdeb 0.10.0
+
+ -- Yury Matveyev <yury.matveev@desy.de>  Tue, 08 Aug 2023 15:21:00 +0200

@@ -1,0 +1,4 @@
+include beamline_monitor/resources/fire.mp3
+include beamline_monitor/resources/rooster.mp3
+include beamline_monitor/resources/siren.mp3
+include beamline_monitor/default_settings.ini

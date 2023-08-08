@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: beamline_monitor
+Version: 1.1.0
+Summary: Small utility to monitor beamline status
+Home-page: UNKNOWN
+Author: Yury Matveyev
+Author-email: yury.matveev@desy.de
+License: GPLv3
+Description: Small utility to monitor beamline status
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Development Status :: 5 - Production/Stable
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown

@@ -1,0 +1,25 @@
+Format: 1.8
+Date: Tue, 08 Aug 2023 15:21:00 +0200
+Source: beamline-monitor
+Binary: python3-beamline-monitor
+Architecture: all
+Version: 1.1.0-1
+Distribution: buster bullseye
+Urgency: low
+Maintainer: Yury Matveyev <yury.matveev@desy.de>
+Changed-By: Yury Matveyev <yury.matveev@desy.de>
+Description:
+ python3-beamline-monitor - Small utility to monitor beamline status
+Changes:
+ beamline-monitor (1.1.0-1) buster bullseye; urgency=low
+ .
+   * source package automatically created by stdeb 0.10.0
+Checksums-Sha1:
+ 7e159633a77d8103a6fd28cd44eb357118acbb7f 6086 beamline-monitor_1.1.0-1_amd64.buildinfo
+ d2032e1fa02ee8a4122b6bbc5ca6ff990f87ad08 234096 python3-beamline-monitor_1.1.0-1_all.deb
+Checksums-Sha256:
+ ed135f5a81bc95f2e9607b6a02bbcc1da5004a51191b559ab75d32069facaf11 6086 beamline-monitor_1.1.0-1_amd64.buildinfo
+ 72b0b357b36fc88209d581c5a8bfa388035fcfeec8c904ffb305b408eb31ac58 234096 python3-beamline-monitor_1.1.0-1_all.deb
+Files:
+ bbc74a92159edd3da876fee6bcdd6857 6086 python optional beamline-monitor_1.1.0-1_amd64.buildinfo
+ 28925ebf41bad5ba81e4915ca441a8b1 234096 python optional python3-beamline-monitor_1.1.0-1_all.deb

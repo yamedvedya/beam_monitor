@@ -11,15 +11,15 @@ import sys
 
 # ----------------------------------------------------------------------
 in_dirs = ["uis"]
-out_dirs = ["gui"]
+out_dirs = ["beamline_monitor/gui"]
 
 ui_compilers = {"linux2": "python -m PyQt5.uic.pyuic",
                 "linux": "python -m PyQt5.uic.pyuic",
-                "win32": "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyuic5.exe"}
+                "win32": "pyuic5.exe"}
 
 rc_compilers = {"linux2": "python -m PyQt5.uic.pyrcc",
                 "linux": "python -m PyQt5.uic.pyrcc",
-                "win32":  "C://Users//matveyev//AppData//Local//Programs//Python//Python37-32//Scripts//pyrcc5.exe"}
+                "win32":  "pyrcc5.exe"}
 
 # ----------------------------------------------------------------------
 def compile_uis(ui_compiler, rc_compiler, in_dirs, out_dirs):

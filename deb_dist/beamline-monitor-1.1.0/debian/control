@@ -1,0 +1,13 @@
+Source: beamline-monitor
+Maintainer: Yury Matveyev <yury.matveev@desy.de>
+Section: python
+Priority: optional
+Build-Depends: python3-setuptools, python3-all, debhelper (>= 9)
+Standards-Version: 3.9.1
+
+Package: python3-beamline-monitor
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: Small utility to monitor beamline status
+ Small utility to monitor beamline status
+

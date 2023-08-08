@@ -1,0 +1,28 @@
+Format: 1.8
+Date: Tue, 08 Aug 2023 15:21:00 +0200
+Source: beamline-monitor
+Architecture: source
+Version: 1.1.0-1
+Distribution: buster bullseye
+Urgency: low
+Maintainer: Yury Matveyev <yury.matveev@desy.de>
+Changed-By: Yury Matveyev <yury.matveev@desy.de>
+Changes:
+ beamline-monitor (1.1.0-1) buster bullseye; urgency=low
+ .
+   * source package automatically created by stdeb 0.10.0
+Checksums-Sha1:
+ 5dd1dbf226e042f542541ff92c37c6ea5143be09 901 beamline-monitor_1.1.0-1.dsc
+ f7cca901778f81abe13392346e2ce99e7d5f9828 237200 beamline-monitor_1.1.0.orig.tar.gz
+ 3e8565d1c92e2117c863c90df687131af229ec57 908 beamline-monitor_1.1.0-1.debian.tar.xz
+ e762667eba76bef8e0f8f7d13b02064ca6ed3572 6011 beamline-monitor_1.1.0-1_source.buildinfo
+Checksums-Sha256:
+ 7c027953c9655432622e55d97185906492302ed40d70168959ae8d900f438d03 901 beamline-monitor_1.1.0-1.dsc
+ 65ea5264a7a73c554c8ee7dc116e84ecbebcd3d4e59c8c2bda425b097a8db285 237200 beamline-monitor_1.1.0.orig.tar.gz
+ 4d40d756a28035621b9daa9d7de0f14c07be95757841ef7db28e82e32b0adfba 908 beamline-monitor_1.1.0-1.debian.tar.xz
+ 55ff77c55464d9b1c0962b9927fba6543643ea49bc43db84c35c12e6418b1866 6011 beamline-monitor_1.1.0-1_source.buildinfo
+Files:
+ cd2c7e57774985acffcaac2e34a0ea76 901 python optional beamline-monitor_1.1.0-1.dsc
+ bb4e4b04267bb9b0ed60f109e62d86c3 237200 python optional beamline-monitor_1.1.0.orig.tar.gz
+ f338bbadb7c2c36fe11e81db15d657d3 908 python optional beamline-monitor_1.1.0-1.debian.tar.xz
+ 9f50c0be751f8a1a59e1eced9fa431eb 6011 python optional beamline-monitor_1.1.0-1_source.buildinfo

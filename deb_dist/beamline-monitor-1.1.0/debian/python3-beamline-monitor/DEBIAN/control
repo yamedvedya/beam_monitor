@@ -1,0 +1,11 @@
+Package: python3-beamline-monitor
+Source: beamline-monitor
+Version: 1.1.0-1
+Architecture: all
+Maintainer: Yury Matveyev <yury.matveev@desy.de>
+Installed-Size: 313
+Depends: python3:any
+Section: python
+Priority: optional
+Description: Small utility to monitor beamline status
+ Small utility to monitor beamline status

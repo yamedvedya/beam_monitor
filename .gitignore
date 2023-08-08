@@ -131,6 +131,6 @@ dmypy.json
 .pyre/
 
 # Project related ignores
-/gui
+/beamline_monitor/gui
 conditions.py
 /.idea
